@@ -45,6 +45,15 @@ S=deploy/robots/g1_23dof/scripts
 D=$(date +%Y%m%d)
 ```
 
+## 0.5 ก่อนเริ่ม: กันสับสน sim / หุ่นจริง (ทุกครั้ง)
+```bash
+# sim ต้องปิด · ถ้าเปิดอยู่ คำสั่งที่ลืม --iface enp43s0 จะอ่านค่าจาก sim แล้วได้ PASS หลอก
+pgrep -a unitree_mujoco            # ต้องไม่มีผลลัพธ์
+# service บนคอม 164 ที่สั่งหุ่นได้ ต้อง inactive ทั้ง 3 (ถ้า active คุยกับรุ่นพี่ก่อน แล้ว sudo systemctl stop <ชื่อ>)
+ssh unitree@192.168.123.164 'systemctl is-active fibo_legged_robot_g1 g1_arm g1_arm_web'
+```
+ทุกโปรแกรมพิมพ์บรรทัดแรก **ต้องเป็น `DDS: REAL ROBOT ...`** ถ้าเห็น `SIM` = ลืม `--iface enp43s0` ให้ Ctrl-C แล้วพิมพ์ใหม่ · ดู [[Hi-level cmd]]
+
 ## 1. เช็คหุ่น (อ่านอย่างเดียว)
 ```bash
 # สรุปสุขภาพหุ่น ต้อง PASS ทุกบรรทัด และ "23 motors online" (ระวัง slot 25/26 แขนขวา)
@@ -72,7 +81,7 @@ python $S/motion_mode.py --iface enp43s0 select ai
 ## 3. byobu (T1 lowstate · T2 lowcmd · T3 g1_ctrl · T4 คำสั่ง)
 ```bash
 # เปิดจอ 4 ช่อง · RUN = เลขรอบ, TAG = ชื่องาน → log ชื่อ ~/g1_{state,cmd}_<วันที่>_<TAG><RUN>.csv
-$S/deploy_byobu.sh <RUN> <TAG>
+IFACE=enp43s0 $S/deploy_byobu.sh <RUN> <TAG>
 ```
 คำสั่งที่พิมพ์รอไว้ในแต่ละช่อง (กด Enter เอง):
 ```bash
@@ -90,7 +99,7 @@ F6 = detach (โปรแกรมยังรันต่อ) · `byobu attach 
 ## 4. sysid step (3/11)
 ```bash
 # เปิด byobu ชื่องาน sysid · ช่อง T3 ไม่ต้องเปิด g1_ctrl เพราะ sysid_motion ส่ง lowcmd เอง (สองตัวพร้อมกัน = แย่งกัน)
-$S/deploy_byobu.sh 1 sysid
+IFACE=enp43s0 $S/deploy_byobu.sh 1 sysid
 # ดูแผนก่อน ไม่ส่งอะไร: จะขยับข้อไหน กี่ rad นานเท่าไร
 python $S/sysid_motion.py --iface enp43s0 --groups armL --joints elbow --kinds step --dry-run
 # step ศอกซ้าย (กระโดดมุมเล็กๆ แล้วค้าง) · --segments เซฟเวลาเริ่ม/จบของแต่ละท่า เอาไว้ให้ pd_check fit ทีละช่วง
@@ -113,7 +122,7 @@ python $S/pd_check.py ~/g1_state_20261103_sysid1.csv ~/g1_cmd_20261103_sysid1.cs
 # อยู่ใน /tmp → หายเมื่อรีบูต ต้อง build ใหม่ทุกวันเทส
 $S/fixstand_train_gains.sh
 # เปิด byobu โดยให้ T3 ใช้ g1_ctrl สำเนานั้น (G1_CTRL_DIR) · ชื่องาน bm (BeyondMimic gains)
-G1_CTRL_DIR=/tmp/g1_fixstand_train/build $S/deploy_byobu.sh 1 bm
+IFACE=enp43s0 G1_CTRL_DIR=/tmp/g1_fixstand_train/build $S/deploy_byobu.sh 1 bm
 # T3: รัน g1_ctrl บนการ์ดที่ต่อหุ่น · env -u / LD_LIBRARY_PATH = ใช้ DDS ของ Unitree ไม่ใช่ของ ROS
 #     เริ่มที่ Passive (damping) → รีโมทเข้า FixStand → ค้างดูว่านิ่ง ไม่สั่น
 cd /tmp/g1_fixstand_train/build && env -u CYCLONEDDS_URI LD_LIBRARY_PATH=/opt/unitree_robotics/lib ./g1_ctrl --network enp43s0 --domain 0
@@ -126,7 +135,7 @@ python $S/pd_check.py ~/g1_state_${D}_bm1.csv ~/g1_cmd_${D}_bm1.csv
 ## 6. g1_ctrl ปกติ P3b (30/10)
 ```bash
 # byobu ชื่องาน run · T3 เปิด g1_ctrl ตัวหลัก (FixStand = gain Unitree, Velocity = policy v0)
-$S/deploy_byobu.sh 1 run
+IFACE=enp43s0 $S/deploy_byobu.sh 1 run
 # วิเคราะห์ log รอบนั้น: kp x / kd x ของ Passive และ FixStand + delay
 python $S/pd_check.py ~/g1_state_20261030_run1.csv ~/g1_cmd_20261030_run1.csv
 ```
@@ -145,7 +154,7 @@ python $S/pd_check.py ~/g1_state_20261030_run1.csv ~/g1_cmd_20261030_run1.csv
 chirp = คลื่น sine ที่เร่งความถี่ 0.3 → 2.5 Hz ใน 12 s ข้อต่อขยับเร็วขึ้นเรื่อยๆ ทำให้เทอม D (kd × ความเร็ว) ใหญ่พอจะวัดได้
 ```bash
 # byobu ชื่องาน chirp · T3 ไม่เปิด g1_ctrl
-$S/deploy_byobu.sh 1 chirp
+IFACE=enp43s0 $S/deploy_byobu.sh 1 chirp
 # ต้อง name='' และไม่มี lowcmd จากใคร ก่อนให้ sysid ส่ง
 python $S/motion_mode.py --iface enp43s0 check
 
@@ -165,7 +174,7 @@ python $S/sysid_motion.py --iface enp43s0 --groups waist --kinds chirp --segment
 python $S/sysid_motion.py --iface enp43s0 --groups legL  --kinds chirp --segments ~/sysid_seg_${D}_chirp_legL.csv   # ~84 s
 python $S/sysid_motion.py --iface enp43s0 --groups legR  --kinds chirp --segments ~/sysid_seg_${D}_chirp_legR.csv
 ```
-- เปลี่ยน RUN ของ byobu ทุกครั้งที่เริ่มกลุ่มใหม่ ถ้าอยากให้ log แยกไฟล์ (`deploy_byobu.sh 2 chirp` ...)
+- เปลี่ยน RUN ของ byobu ทุกครั้งที่เริ่มกลุ่มใหม่ ถ้าอยากให้ log แยกไฟล์ (`IFACE=enp43s0 deploy_byobu.sh 2 chirp` ...)
 - ผ่านเมื่อ `kp x` / `kd x` ห่างจาก sim ไม่เกิน ±0.1 และ corr ≥ 0.9 · เข่าใน sim ได้แค่ 0.85–0.93 (P กับ D หักล้างกัน) อย่าตกใจถ้าต่ำ
 
 ## 9. ดูบนตัวหุ่น

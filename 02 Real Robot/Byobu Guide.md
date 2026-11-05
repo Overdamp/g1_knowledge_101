@@ -266,7 +266,7 @@ exec byobu attach -t "$SESSION"
 ### 11.1 รัน
 ```bash
 cd ~/nvidia/unitree/unitree_rl_mjlab
-deploy/robots/g1_23dof/scripts/deploy_byobu.sh [RUN] [TAG]
+IFACE=enp43s0 deploy/robots/g1_23dof/scripts/deploy_byobu.sh [RUN] [TAG]
 ```
 | อาร์กิวเมนต์ / ตัวแปร | ค่าเริ่มต้น | ใช้ทำอะไร |
 |---|---|---|
@@ -280,9 +280,9 @@ log ที่ได้: `~/g1_state_<YYYYMMDD>_<TAG><RUN>.csv` และ `~/g1_c
 
 ตัวอย่างที่ใช้จริง:
 ```bash
-deploy/robots/g1_23dof/scripts/deploy_byobu.sh 1 sysid                                   # sysid (ไม่เปิด g1_ctrl)
-G1_CTRL_DIR=/tmp/g1_fixstand_train/build deploy/robots/g1_23dof/scripts/deploy_byobu.sh 1 bm   # FixStand gain เทรน
-deploy/robots/g1_23dof/scripts/deploy_byobu.sh 2 run                                     # g1_ctrl ตัวปกติ (Handover)
+IFACE=enp43s0 deploy/robots/g1_23dof/scripts/deploy_byobu.sh 1 sysid                                   # sysid (ไม่เปิด g1_ctrl)
+IFACE=enp43s0 G1_CTRL_DIR=/tmp/g1_fixstand_train/build deploy/robots/g1_23dof/scripts/deploy_byobu.sh 1 bm   # FixStand gain เทรน
+IFACE=enp43s0 deploy/robots/g1_23dof/scripts/deploy_byobu.sh 2 run                                     # g1_ctrl ตัวปกติ (Handover)
 ```
 
 ### 11.2 หน้าจอที่ได้
@@ -316,7 +316,7 @@ deploy/robots/g1_23dof/scripts/deploy_byobu.sh 2 run                            
 # 2. ปิด session เดิม
 tmux kill-session -t g1deploy
 # 3. เปิดชุดใหม่
-G1_CTRL_DIR=/tmp/g1_fixstand_train/build deploy/robots/g1_23dof/scripts/deploy_byobu.sh 1 bm
+IFACE=enp43s0 G1_CTRL_DIR=/tmp/g1_fixstand_train/build deploy/robots/g1_23dof/scripts/deploy_byobu.sh 1 bm
 ```
 
 ---

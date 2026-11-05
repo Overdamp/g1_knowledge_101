@@ -16,7 +16,7 @@ aliases: [fixstand_train_gains, BeyondMimic FixStand]
 
 ```bash
 $S/fixstand_train_gains.sh
-G1_CTRL_DIR=/tmp/g1_fixstand_train/build $S/deploy_byobu.sh 1 bm
+IFACE=enp43s0 G1_CTRL_DIR=/tmp/g1_fixstand_train/build $S/deploy_byobu.sh 1 bm
 ```
 `/tmp` หายเมื่อรีบูต สคริปต์สร้างใหม่ทุกครั้งอยู่แล้ว
 

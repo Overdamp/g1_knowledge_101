@@ -27,7 +27,7 @@ aliases: [sysid_motion, system identification]
 
 ## คำสั่ง
 ```bash
-$S/deploy_byobu.sh 1 sysid          # T1/T2 บันทึก, T3 ไม่เปิด g1_ctrl
+IFACE=enp43s0 $S/deploy_byobu.sh 1 sysid          # T1/T2 บันทึก, T3 ไม่เปิด g1_ctrl
 python $S/sysid_motion.py --iface enp43s0 --dry-run
 python $S/sysid_motion.py --iface enp43s0 --groups armL --joints elbow --kinds step --segments ~/sysid_seg_<วันที่>_light.csv
 python $S/sysid_motion.py --iface enp43s0 --segments ~/sysid_seg_<วันที่>_full.csv      # รอบเต็ม

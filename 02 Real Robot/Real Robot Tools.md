@@ -24,7 +24,7 @@ aliases: [สคริปต์, tools, เครื่องมือ]
 | `motion_mode.py release` / `select ai` | สลับ debug ↔ ai |
 | `sysid_motion.py` | สั่งท่าทีละข้อต่อแทน g1_ctrl ([[Sysid Motion]]) |
 | `fixstand_train_gains.sh` | สร้าง g1_ctrl สำเนาที่ FixStand ใช้ gain ที่เทรน ([[FixStand Train Gains]]) |
-| `deploy_byobu.sh [RUN] [TAG]` | เปิด byobu T1–T4 ([[Test Day Procedure]]) |
+| `IFACE=enp43s0 deploy_byobu.sh [RUN] [TAG]` | เปิด byobu T1–T4 · **ต้องใส่ IFACE** (`lo` = ซ้อมใน sim) · ไม่ยอมเปิดโหมดหุ่นถ้า sim เปิดอยู่ ([[Test Day Procedure]]) |
 
 ## sim
 | สคริปต์ | ทำอะไร |
