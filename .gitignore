@@ -3,3 +3,6 @@
 .obsidian/cache
 .trash/
 .DS_Store
+
+# nested vault configs (opened a subfolder as its own vault by mistake)
+*/**/.obsidian/
