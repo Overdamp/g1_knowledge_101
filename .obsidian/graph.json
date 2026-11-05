@@ -1,0 +1,8 @@
+{
+  "colorGroups": [
+    {"query": "path:\"01 Concepts\"", "color": {"a": 1, "rgb": 5431378}},
+    {"query": "path:\"02 Real Robot\"", "color": {"a": 1, "rgb": 14701138}},
+    {"query": "path:\"03 Training and Sim\"", "color": {"a": 1, "rgb": 5419488}}
+  ],
+  "showTags": false
+}

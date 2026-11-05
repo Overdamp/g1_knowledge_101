@@ -1,0 +1,5 @@
+# Obsidian: per-machine window layout and caches
+.obsidian/workspace*.json
+.obsidian/cache
+.trash/
+.DS_Store
