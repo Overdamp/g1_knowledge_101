@@ -11,7 +11,7 @@ aliases: [ปิดเครื่อง, shutdown]
 1. g1_ctrl อยู่ใน Passive (L2 + B)
 2. คืนให้ ai: [[Handover]] (L1 + R1 ค้าง 1 s → START) **หรือ** Ctrl-C g1_ctrl แล้ว `motion_mode.py select ai`
 3. ไฟม่วง (zero torque) หุ่นยังแขวน
-4. `python deploy/robots/g1_23dof/scripts/robot_health.py` จดค่าแบต/อุณหภูมิท้ายวัน
+4. `python deploy/robots/g1_23dof/scripts/robot_health.py --iface enp43s0` จดค่าแบต/อุณหภูมิท้ายวัน
 5. ปิดสวิตช์
 
 ## ถ้าหุ่นยืนบนพื้นในโหมด ai

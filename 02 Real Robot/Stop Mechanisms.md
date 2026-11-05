@@ -31,7 +31,7 @@ aliases: [หยุดฉุกเฉิน, emergency stop]
 | จอย Xbox เสมือนผ่าน `/dev/uinput` (`vpad.py`, python-evdev) + sim `use_joystick: 1` | g1_ctrl (C++) | จอย → unitree_mujoco → `wireless_remote` → FSM เหมือนของจริงทุกขั้น |
 | ตัวครอบ `fake_l2b.py` ใส่บิต L2 (byte 2, 0x20) + B (byte 3, 0x02) ใน LowState | `sysid_motion.py` | ข้ามส่วนจอย ทดสอบ `fault()` → damping |
 
-- g1_ctrl ใช้ **domain 0** แม้บน `lo` (`main.cpp` เขียน `Init(0, ...)` ตายตัว) sim ต้องเป็น domain 0 ด้วย
+- ตั้งแต่ 5/11: g1_ctrl มี `--domain` · sim (`simulate/config.yaml`) = domain 1 → `g1_ctrl --network lo --domain 1` · หุ่นจริง = domain 0 (ก่อนหน้านี้ `Init(0, ...)` ตายตัว)
 - ลำดับปุ่ม/แกนของจอย Xbox ใน sim: ปุ่ม A B X Y LB RB back start = 0–7, แกน LX LY **LT** RX RY RT hatX hatY = 0–7 (LT กด = แกน 2 > 0, up = แกน 7 < 0)
 - สคริปต์อยู่ใน scratchpad ของ session (หายเมื่อรีบูต)
 

@@ -253,7 +253,7 @@ tmux set-option -t "$SESSION" mouse on
 SETUP="cd ~/nvidia/unitree/unitree_rl_mjlab && source ~/miniconda3/etc/profile.d/conda.sh && conda activate g1_sdk && S=deploy/robots/g1_23dof/scripts && clear"
 for p in "$A" "$B"; do tmux send-keys -t "$p" "$SETUP" Enter; done
 sleep 1
-tmux send-keys -t "$A" 'python $S/robot_health.py'          # พิมพ์รอไว้
+tmux send-keys -t "$A" 'python $S/robot_health.py --iface enp43s0'          # พิมพ์รอไว้
 tmux select-pane -t "$B"
 exec byobu attach -t "$SESSION"
 ```

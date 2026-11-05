@@ -22,8 +22,8 @@ cd ~/nvidia/unitree/unitree_rl_mjlab ; conda activate g1_sdk ; S=deploy/robots/g
 | # | ขั้น | คำสั่ง | ผ่านเมื่อ |
 |---|---|---|---|
 | 0 | เปิดหุ่นตอนแขวน ไม่กดปุ่ม + เน็ตเวิร์ก | [[Network Setup]] | ping 0% loss |
-| 1 | สุขภาพหุ่น | `python $S/robot_health.py` | PASS ทุกบรรทัด, **23 motors online** |
-| 2 | ค่าศูนย์ข้อต่อ | `python $S/offset_check.py --joints right_elbow,...` | OK ทุกข้อต่อที่หมุน ([[Offset Check]]) |
+| 1 | สุขภาพหุ่น | `python $S/robot_health.py --iface enp43s0` | PASS ทุกบรรทัด, **23 motors online** |
+| 2 | ค่าศูนย์ข้อต่อ | `python $S/offset_check.py --iface enp43s0 --joints right_elbow,...` | OK ทุกข้อต่อที่หมุน ([[Offset Check]]) |
 | 3 | เข้า debug | `motion_mode.py release` → `check` | `name=''`, ไฟเหลือง |
 | 4 | sysid เบาๆ | `sysid_motion.py --groups armL --joints elbow --kinds step` | `kp x` ≈ 1, L2 + B หยุดได้ ([[Sysid Motion]]) |
 | 5 | FixStand gain ที่เทรน | `fixstand_train_gains.sh` + `deploy_byobu.sh 1 bm` | `kp x` 0.8–1.2, `kd x` 0.5–1.5 ([[FixStand Train Gains]]) |

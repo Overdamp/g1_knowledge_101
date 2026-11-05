@@ -27,6 +27,10 @@ updated: 2026-11-05
 | `pd_check.py` | ไม่ (อ่าน CSV) | เอา log state + cmd มา fit หาว่ามอเตอร์ให้แรงตาม kp/kd ที่สั่งกี่เท่า (`kp x`, `kd x`) และ delay |
 
 ## 0. เตรียมเครื่อง (ทุกครั้ง)
+> [!tip] ทางลัด (ใน `~/.bashrc` ตั้งแต่ 5/11): พิมพ์ `g1net` แล้ว `g1env` = ทำข้อ 0 ทั้งหมด · `g1ctrl_real` = เปิด g1_ctrl หุ่นจริง (ป้ายแดง, ต้องพิมพ์ `real` ยืนยัน)
+
+> [!info] หุ่นจริง = `enp43s0` + **domain 0** · sim = `lo` + **domain 1** (5/11) · **ทุกโปรแกรมค่าเริ่มต้น = sim** ไม่ใส่ flag = ไป sim · หุ่นจริงต้องใส่ `--iface enp43s0` (python) / `--network enp43s0` (g1_ctrl) ทุกครั้ง และดูบรรทัดแรกที่พิมพ์ต้องเป็น `REAL ROBOT` · ดู [[g1_23_dof mujoco_sim cmd]]
+
 ```bash
 # ตั้ง IP ให้การ์ดแลนที่ต่อหุ่น (หุ่นอยู่วง 192.168.123.x) และเปิดการ์ด · หายเมื่อรีบูต/ถอดสาย
 sudo ip addr add 192.168.123.123/24 dev enp43s0 && sudo ip link set enp43s0 up
@@ -44,13 +48,13 @@ D=$(date +%Y%m%d)
 ## 1. เช็คหุ่น (อ่านอย่างเดียว)
 ```bash
 # สรุปสุขภาพหุ่น ต้อง PASS ทุกบรรทัด และ "23 motors online" (ระวัง slot 25/26 แขนขวา)
-python $S/robot_health.py
+python $S/robot_health.py --iface enp43s0
 # ดูโหมดปัจจุบัน ตอนบูตต้องเป็น name='ai' (controller ของ Unitree คุมอยู่)
-python $S/motion_mode.py check
+python $S/motion_mode.py --iface enp43s0 check
 # เช็คค่าศูนย์เฉพาะแขนขวา: หมุนข้อต่อที่ระบุจนชนทั้งสองฝั่ง ดูว่า OK (|d| เล็ก) · Ctrl-C เพื่อจบและเซฟผล
-python $S/offset_check.py --joints right_elbow,right_wrist,right_shoulder
+python $S/offset_check.py --iface enp43s0 --joints right_elbow,right_wrist,right_shoulder
 # เหมือนข้างบนแต่ทั้ง 23 ข้อ
-python $S/offset_check.py
+python $S/offset_check.py --iface enp43s0
 # (ไม่ใช้หุ่น) เช็คว่า deploy.yaml ของ policy v0 ตรงกับ ONNX · ทำก่อนวันเทสได้
 python $S/gain_check.py deploy/robots/g1_23dof/config/policy/velocity/v0
 ```
@@ -58,11 +62,11 @@ python $S/gain_check.py deploy/robots/g1_23dof/config/policy/velocity/v0
 ## 2. เข้า / ออก debug
 ```bash
 # ปิด controller ของ Unitree เพื่อให้เราส่ง lowcmd เองได้ · ต้องพิมพ์ yes · ไฟเปลี่ยนเป็นเหลือง
-python $S/motion_mode.py release
+python $S/motion_mode.py --iface enp43s0 release
 # ยืนยันว่าเข้า debug แล้ว: name='' และไม่มี lowcmd จากใคร
-python $S/motion_mode.py check
+python $S/motion_mode.py --iface enp43s0 check
 # กลับไปให้ Unitree คุม (zero torque, ไฟม่วง) · ใช้เมื่อ Handover จากรีโมทไม่สำเร็จ หรือก่อนปิดเครื่อง
-python $S/motion_mode.py select ai
+python $S/motion_mode.py --iface enp43s0 select ai
 ```
 
 ## 3. byobu (T1 lowstate · T2 lowcmd · T3 g1_ctrl · T4 คำสั่ง)
@@ -76,7 +80,11 @@ $S/deploy_byobu.sh <RUN> <TAG>
 python $S/lowstate_monitor.py --iface enp43s0 --log ~/g1_state_${D}_${TAG}${RUN}.csv
 # T2: บันทึกคำสั่งที่ส่งไปหุ่น · ถ้าเห็น MISMATCH = gain ไม่ตรงกับที่คาด ให้หยุด
 python $S/lowcmd_monitor.py --iface enp43s0 --log ~/g1_cmd_${D}_${TAG}${RUN}.csv
+# T3 (ส่งแรง): g1_ctrl หุ่นจริง · คีย์บอร์ดปิด สั่งด้วยรีโมทเท่านั้น
+cd deploy/robots/g1_23dof/build && env -u CYCLONEDDS_URI LD_LIBRARY_PATH=/opt/unitree_robotics/lib ./g1_ctrl --network enp43s0 --domain 0
 ```
+ซ้อมทั้งชุดใน sim ก่อนวันเทส: `IFACE=lo $S/deploy_byobu.sh 1 simtest` (ทุกช่องได้ `--domain 1` ให้เอง)
+
 F6 = detach (โปรแกรมยังรันต่อ) · `byobu attach -t g1deploy` = กลับ · ดู [[Byobu Guide]]
 
 ## 4. sysid step (3/11)
@@ -84,16 +92,16 @@ F6 = detach (โปรแกรมยังรันต่อ) · `byobu attach 
 # เปิด byobu ชื่องาน sysid · ช่อง T3 ไม่ต้องเปิด g1_ctrl เพราะ sysid_motion ส่ง lowcmd เอง (สองตัวพร้อมกัน = แย่งกัน)
 $S/deploy_byobu.sh 1 sysid
 # ดูแผนก่อน ไม่ส่งอะไร: จะขยับข้อไหน กี่ rad นานเท่าไร
-python $S/sysid_motion.py --groups armL --joints elbow --kinds step --dry-run
+python $S/sysid_motion.py --iface enp43s0 --groups armL --joints elbow --kinds step --dry-run
 # step ศอกซ้าย (กระโดดมุมเล็กๆ แล้วค้าง) · --segments เซฟเวลาเริ่ม/จบของแต่ละท่า เอาไว้ให้ pd_check fit ทีละช่วง
-python $S/sysid_motion.py --groups armL --joints elbow --kinds step --segments ~/sysid_seg_20261103_light.csv
+python $S/sysid_motion.py --iface enp43s0 --groups armL --joints elbow --kinds step --segments ~/sysid_seg_20261103_light.csv
 # step ศอกขวา (ดูมอเตอร์ 25 ด้วย)
-python $S/sysid_motion.py --groups armR --joints elbow --kinds step --segments ~/sysid_seg_20261103_lightR.csv
+python $S/sysid_motion.py --iface enp43s0 --groups armR --joints elbow --kinds step --segments ~/sysid_seg_20261103_lightR.csv
 # step เข่าซ้าย: ดูแผนก่อนเพราะขาแรงกว่าแขน
-python $S/sysid_motion.py --groups legL --joints knee  --kinds step --dry-run
-python $S/sysid_motion.py --groups legL --joints knee  --kinds step --segments ~/sysid_seg_20261103_kneeL.csv
+python $S/sysid_motion.py --iface enp43s0 --groups legL --joints knee  --kinds step --dry-run
+python $S/sysid_motion.py --iface enp43s0 --groups legL --joints knee  --kinds step --segments ~/sysid_seg_20261103_kneeL.csv
 # รอบเทส L2 + B: กดระหว่างท่า ต้องเข้า damping ทันทีและสคริปต์จบเอง
-python $S/sysid_motion.py --groups legL --joints knee  --kinds step --segments ~/sysid_seg_20261103_kneeL_stop.csv
+python $S/sysid_motion.py --iface enp43s0 --groups legL --joints knee  --kinds step --segments ~/sysid_seg_20261103_kneeL_stop.csv
 # วิเคราะห์: kp x ≈ 1 = มอเตอร์ให้แรงตาม kp ที่สั่ง (ใส่ --segments ไฟล์ข้างบนเพื่อ fit เฉพาะช่วง step)
 python $S/pd_check.py ~/g1_state_20261103_sysid1.csv ~/g1_cmd_20261103_sysid1.csv
 ```
@@ -108,7 +116,8 @@ $S/fixstand_train_gains.sh
 G1_CTRL_DIR=/tmp/g1_fixstand_train/build $S/deploy_byobu.sh 1 bm
 # T3: รัน g1_ctrl บนการ์ดที่ต่อหุ่น · env -u / LD_LIBRARY_PATH = ใช้ DDS ของ Unitree ไม่ใช่ของ ROS
 #     เริ่มที่ Passive (damping) → รีโมทเข้า FixStand → ค้างดูว่านิ่ง ไม่สั่น
-cd /tmp/g1_fixstand_train/build && env -u CYCLONEDDS_URI LD_LIBRARY_PATH=/opt/unitree_robotics/lib ./g1_ctrl --network enp43s0
+cd /tmp/g1_fixstand_train/build && env -u CYCLONEDDS_URI LD_LIBRARY_PATH=/opt/unitree_robotics/lib ./g1_ctrl --network enp43s0 --domain 0
+# หรือ: G1_CTRL_DIR=/tmp/g1_fixstand_train/build g1ctrl_real
 # วิเคราะห์: kp x 0.8–1.2, kd x 0.5–1.5
 python $S/pd_check.py ~/g1_state_${D}_bm1.csv ~/g1_cmd_${D}_bm1.csv
 ```
@@ -127,7 +136,7 @@ python $S/pd_check.py ~/g1_state_20261030_run1.csv ~/g1_cmd_20261030_run1.csv
 - เช็ค:
   ```bash
   # ต้องเห็น name='ai' และ 23 motors online
-  python $S/robot_health.py
+  python $S/robot_health.py --iface enp43s0
   ```
 - ปิดเครื่อง: [[Safe Shutdown]]
 
@@ -138,23 +147,23 @@ chirp = คลื่น sine ที่เร่งความถี่ 0.3 → 
 # byobu ชื่องาน chirp · T3 ไม่เปิด g1_ctrl
 $S/deploy_byobu.sh 1 chirp
 # ต้อง name='' และไม่มี lowcmd จากใคร ก่อนให้ sysid ส่ง
-python $S/motion_mode.py check
+python $S/motion_mode.py --iface enp43s0 check
 
 # ดูแผน chirp แขนซ้ายทั้ง 5 ข้อ (ไม่ส่งอะไร)
-python $S/sysid_motion.py --groups armL --kinds chirp --dry-run
+python $S/sysid_motion.py --iface enp43s0 --groups armL --kinds chirp --dry-run
 # chirp แขนซ้าย ~71 s
-python $S/sysid_motion.py --groups armL --kinds chirp --segments ~/sysid_seg_${D}_chirp_armL.csv
+python $S/sysid_motion.py --iface enp43s0 --groups armL --kinds chirp --segments ~/sysid_seg_${D}_chirp_armL.csv
 # วิเคราะห์ทีละท่า: เทียบ kp x / kd x กับ sim (0.95–0.99)
 python $S/pd_check.py ~/g1_state_${D}_chirp1.csv ~/g1_cmd_${D}_chirp1.csv --segments ~/sysid_seg_${D}_chirp_armL.csv
 
 # รอบเทส L2 + B: กดตอนแขนกำลังแกว่งเร็ว ต้องหยุดทันที · สังเกตแขนหลังหยุด (ค้างหรือตกช้าๆ)
-python $S/sysid_motion.py --groups armL --kinds chirp --segments ~/sysid_seg_${D}_chirp_armL_stop.csv
+python $S/sysid_motion.py --iface enp43s0 --groups armL --kinds chirp --segments ~/sysid_seg_${D}_chirp_armL_stop.csv
 
 # กลุ่มที่เหลือ ทีละกลุ่ม ผ่านค่อยไปต่อ (รัน --dry-run ก่อนทุกกลุ่ม)
-python $S/sysid_motion.py --groups armR  --kinds chirp --segments ~/sysid_seg_${D}_chirp_armR.csv
-python $S/sysid_motion.py --groups waist --kinds chirp --segments ~/sysid_seg_${D}_chirp_waist.csv  # ~19 s
-python $S/sysid_motion.py --groups legL  --kinds chirp --segments ~/sysid_seg_${D}_chirp_legL.csv   # ~84 s
-python $S/sysid_motion.py --groups legR  --kinds chirp --segments ~/sysid_seg_${D}_chirp_legR.csv
+python $S/sysid_motion.py --iface enp43s0 --groups armR  --kinds chirp --segments ~/sysid_seg_${D}_chirp_armR.csv
+python $S/sysid_motion.py --iface enp43s0 --groups waist --kinds chirp --segments ~/sysid_seg_${D}_chirp_waist.csv  # ~19 s
+python $S/sysid_motion.py --iface enp43s0 --groups legL  --kinds chirp --segments ~/sysid_seg_${D}_chirp_legL.csv   # ~84 s
+python $S/sysid_motion.py --iface enp43s0 --groups legR  --kinds chirp --segments ~/sysid_seg_${D}_chirp_legR.csv
 ```
 - เปลี่ยน RUN ของ byobu ทุกครั้งที่เริ่มกลุ่มใหม่ ถ้าอยากให้ log แยกไฟล์ (`deploy_byobu.sh 2 chirp` ...)
 - ผ่านเมื่อ `kp x` / `kd x` ห่างจาก sim ไม่เกิน ±0.1 และ corr ≥ 0.9 · เข่าใน sim ได้แค่ 0.85–0.93 (P กับ D หักล้างกัน) อย่าตกใจถ้าต่ำ

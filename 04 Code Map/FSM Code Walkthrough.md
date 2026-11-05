@@ -143,7 +143,7 @@ source: unitree_rl_mjlab @ b9c3eaa (phase3-delay-dr)
 ```cpp
 37  auto vm = param::helper(argc, argv);
 38  FSMState::keyboard_fsm_shortcuts_enabled = (vm["network"].as<std::string>() == "lo");
-45  unitree::robot::ChannelFactory::Instance()->Init(0, vm["network"].as<std::string>());
+45  unitree::robot::ChannelFactory::Instance()->Init(0, vm["network"].as<std::string>());   // 5/11: เปลี่ยนเป็น Init(domain, network) + บังคับ --network
 47  init_fsm_state();
 49  FSMState::lowcmd->msg_.mode_machine() = 4; // 23dof
 50  if(!FSMState::lowcmd->check_mode_machine(FSMState::lowstate)) { ... exit(-1); }
