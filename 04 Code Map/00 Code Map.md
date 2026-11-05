@@ -155,7 +155,7 @@ build: `cd deploy/robots/g1_23dof/build && make` (โฟลเดอร์ `buil
 ### 4.1 เฉพาะ g1_23dof
 | ไฟล์ | A/M | ทำอะไร | commit |
 |---|---|---|---|
-| `deploy/robots/g1_23dof/main.cpp` | M | เริ่ม DDS + FSM, คีย์ sim `u/v/p/h`, LowState timeout 100 ms, ข้อความวิธีใช้ | 233aac8, e0851be, 77ddcd8 |
+| `deploy/robots/g1_23dof/main.cpp` | M | เริ่ม DDS + FSM, คีย์ sim `u/v/p/h`, LowState timeout 100 ms, ข้อความวิธีใช้ · **`--domain` + ค่าเริ่มต้น sim (lo, 1), บรรทัด `DDS: ... SIM/REAL ROBOT`** | 233aac8, e0851be, 77ddcd8, 4fc50cc |
 | `deploy/robots/g1_23dof/config/config.yaml` | M | FSM: Passive / FixStand / Velocity / Handover, ปุ่ม, kp/kd, `policy_dir: .../v0` | 233aac8, 32a9f5e, 77ddcd8 |
 | `deploy/robots/g1_23dof/src/State_RLBase.cpp` | M | soft start 0.5 s, เช็คเอียง (bad_orientation 0.85 rad) แบบ local | 233aac8, 2febdec, 32a9f5e |
 | `deploy/robots/g1_23dof/include/State_Handover.h` | **A** | Passive → `SelectMode("ai")` → ปิดตัว (ทดสอบจริง 3/11) | 77ddcd8 |
@@ -191,18 +191,18 @@ build: `cd deploy/robots/g1_23dof/build && make` (โฟลเดอร์ `buil
 
 | ไฟล์ | บรรทัด | สั่งมอเตอร์? | ทำอะไร | commit | โน้ต |
 |---|---|---|---|---|---|
-| `lowstate_monitor.py` | 315 | ❌ | อ่าน `rt/lowstate`, ตาราง 23 ข้อต่อ, log CSV, `tau_est` **(โมดูลกลาง: สคริปต์อื่น import)** | 67353a7, 54df935 | [[LowState and LowCmd]] |
+| `lowstate_monitor.py` | 319 | ❌ | อ่าน `rt/lowstate`, ตาราง 23 ข้อต่อ, log CSV, `tau_est` **(โมดูลกลาง: สคริปต์อื่น import)** | 67353a7, 54df935, 4fc50cc | [[LowState and LowCmd]] |
 | `analyze_joint_sweep.py` | 143 | ❌ | สรุปช่วงหมุน/ทิศจาก log การหมุนมือ | 67353a7 | [[Joint Map and Slots]] |
-| `lowcmd_monitor.py` | 219 | ❌ | อ่าน `rt/lowcmd`, บอก `gains match: ...` / `MISMATCH` | 54df935 | [[kp kd Verification]] |
+| `lowcmd_monitor.py` | 223 | ❌ | อ่าน `rt/lowcmd`, บอก `gains match: ...` / `MISMATCH` | 54df935 | [[kp kd Verification]] |
 | `pd_check.py` | 358 | ❌ | fit kp/kd จาก log คู่ state + cmd, `--replay`, `--segments` (fit ต่อการทดสอบ + offset), `fit_pd()` เก็บ P และ D ใน fit เสมอ | 54df935, fd8d80f, ece6d7a, d9194fd | [[kp kd Verification]] |
 | `gain_check.py` | 115 | ❌ | deploy.yaml เทียบกับค่าใน ONNX | 32a9f5e | [[Deploy Contract]] |
 | `vel_eval.py` | 243 | ❌ (sim) | วัด velocity tracking, `--hang` | 54df935, 32a9f5e | [[Sim2Sim Evaluation]] |
 | `sim_speed_monitor.py` | 92 | ❌ | ความเร็วเดินใน sim2sim | 32a9f5e | |
-| `motion_mode.py` | 127 | ⚠️ เปลี่ยนโหมด | check / release / select `ai` | c0265df | [[Motion Switcher]] |
-| `robot_health.py` | 127 | ❌ | เช็คสุขภาพหุ่น PASS/WARN/FAIL | b9c3eaa | [[Real Robot Tools]] |
-| `offset_check.py` | 190 | ❌ | ค่าศูนย์ข้อต่อเทียบจุดชนสุด 28/10, เซฟผลลงไฟล์ | b9c3eaa | [[Offset Check]] |
-| `sysid_motion.py` | 383 | ✅ | step / chirp ต่อข้อต่อบนรอก แทน g1_ctrl | 5cc5a13 | [[Sysid Motion]] |
-| `deploy_byobu.sh` | 82 | – | byobu 4 ช่อง (T1 lowstate, T2 lowcmd, T3 g1_ctrl, T4 คำสั่ง) | fd8d80f, 5cc5a13 | [[Test Day Procedure]] |
+| `motion_mode.py` | 131 | ⚠️ เปลี่ยนโหมด | check / release / select `ai` | c0265df, 4fc50cc | [[Motion Switcher]] |
+| `robot_health.py` | 132 | ❌ | เช็คสุขภาพหุ่น PASS/WARN/FAIL | b9c3eaa | [[Real Robot Tools]] |
+| `offset_check.py` | 194 | ❌ | ค่าศูนย์ข้อต่อเทียบจุดชนสุด 28/10, เซฟผลลงไฟล์ | b9c3eaa | [[Offset Check]] |
+| `sysid_motion.py` | 387 | ✅ | step / chirp ต่อข้อต่อบนรอก แทน g1_ctrl | 5cc5a13, 4fc50cc | [[Sysid Motion]] |
+| `deploy_byobu.sh` | 99 | – | byobu 4 ช่อง (T1 lowstate, T2 lowcmd, T3 g1_ctrl, T4 คำสั่ง) · **ต้องใส่ `IFACE=`**, ไม่เปิดโหมดหุ่นถ้า sim เปิด | fd8d80f, 5cc5a13, 4fc50cc, 4318176 | [[Test Day Procedure]] |
 | `fixstand_train_gains.sh` | 80 | – | g1_ctrl สำเนาที่ FixStand ใช้ gain เทรน, ตัด Velocity | 5cc5a13 | [[FixStand Train Gains]] |
 | `sim2sim_policy.sh` | 46 | – | g1_ctrl สำเนาสำหรับลอง policy โฟลเดอร์อื่นใน sim | 32a9f5e | [[Sim2Sim Evaluation]] |
 

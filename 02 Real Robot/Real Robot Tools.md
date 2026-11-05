@@ -6,6 +6,9 @@ aliases: [สคริปต์, tools, เครื่องมือ]
 
 ทุกตัวอยู่ใน `unitree_rl_mjlab/deploy/robots/g1_23dof/scripts/` ใช้ env **`g1_sdk`** (มี unitree_sdk2py, onnxruntime, mujoco)
 
+> [!warning] ตั้งแต่ 5/11/2026 ค่าเริ่มต้น = sim (`lo`, domain 1)
+> หุ่นจริงต้องใส่ `--iface enp43s0` ทุกครั้ง · บรรทัดแรกที่พิมพ์ต้องเป็น `DDS: REAL ROBOT ...` · ดู [[DDS and Domains]] · คำสั่งพร้อมคัดลอก [[terminal cmd]]
+
 ## อ่านอย่างเดียว (ปลอดภัยทุกเมื่อ)
 | สคริปต์ | อ่าน | ใช้ทำอะไร |
 |---|---|---|

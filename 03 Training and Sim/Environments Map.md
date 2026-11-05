@@ -28,5 +28,19 @@ aliases: [env, conda, uv, venv]
 6. สคริปต์ Unitree SDK: `env -u CYCLONEDDS_URI` ([[DDS and Domains]])
 7. ดิสก์ /home เหลือน้อย (~50 GB) uv ใช้ cache ร่วม conda ดาวน์โหลดซ้ำ
 
+## ทางลัดใน `~/.bashrc` (5/11/2026)
+| พิมพ์ | ทำอะไร |
+|---|---|
+| `g1net` | IP 192.168.123.123 บน `enp43s0` + multicast บน `lo` + ping หุ่น |
+| `g1env` | repo + `conda activate g1_sdk` + `unset CYCLONEDDS_URI` + ตั้ง `$S` `$D` |
+| `g1sim` | unitree_mujoco (lo, domain 1) · `G1_SIM_DOMAIN=0 g1sim` สำหรับ g1pilot |
+| `g1ctrl_sim` | g1_ctrl กับ sim · ไม่ยอมเปิดซ้ำ |
+| `g1ctrl_real` | g1_ctrl หุ่นจริง · ป้ายแดง · ต้องพิมพ์ `real` · ไม่เปิดถ้า sim เปิดอยู่หรือยังไม่ตั้ง IP |
+| `ros_lo` | ROS 2 บน lo + `ROS_DOMAIN_ID=1` เฉพาะ terminal นั้น |
+
+- `CYCLONEDDS_URI` / `ROS_DOMAIN_ID` ไม่ export ทั่วไปแล้ว (comment ไว้) · `RMW_IMPLEMENTATION=rmw_cyclonedds_cpp` ยังเป็นค่าทั่วไป
+- history: `HISTSIZE=100000`, `HISTFILESIZE=200000`, มีวันเวลา, `history -a` ทุกคำสั่ง (ช่อง byobu ไม่ปนกัน) · ค้นด้วย Ctrl + R
+- สำรอง: `~/.bashrc.bak_20261105`, `~/.bashrc.bak_20261105b`
+
 ## ดูเพิ่ม
 [[Cross-Sim Isaac Lab]] · [[Training Practice]] · [[Troubleshooting]]

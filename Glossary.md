@@ -19,7 +19,7 @@ aliases: [ศัพท์, คำศัพท์]
 | **`mode_machine`** | รหัสรุ่นหุ่น 4 = 23dof | [[Joint Map and Slots]] |
 | **`motorstate`** | flag error ของมอเตอร์ 0 = ปกติ | [[Incident Motors 25-26]] |
 | **DDS / CycloneDDS** | middleware ที่ Unitree SDK และ ROS 2 ใช้ | [[DDS and Domains]] |
-| **domain** | เลขแยกวง DDS (Unitree 0, ROS 1) | [[DDS and Domains]] |
+| **domain** | เลขแยกวง DDS (หุ่นจริง 0, sim 1, ROS 1) | [[DDS and Domains]] |
 | **g1_ctrl** | โปรแกรม C++ deploy policy บนหุ่น | [[g1_ctrl FSM]] |
 | **Passive / FixStand / Velocity / Handover** | state ของ g1_ctrl | [[g1_ctrl FSM]] |
 | **motion_switcher** | บริการในหุ่นเลือกว่า controller ไหนคุม | [[Motion Switcher]] |
@@ -46,3 +46,7 @@ aliases: [ศัพท์, คำศัพท์]
 | **hard stop** | จุดชนสุดทางกลของข้อต่อ | [[Offset Check]] |
 | **PhysX / Newton (MJWarp) / MuJoCo** | physics engine 3 ตัวที่ใช้ทดสอบข้ามกัน | [[Cross-Sim Isaac Lab]] |
 | **byobu / tmux** | แบ่งหน้าจอ terminal ใช้วันทดสอบ (T1–T4) | [[Real Robot Tools]] |
+| **safe by default** | ค่าเริ่มต้นต้องปลอดภัย ฮาร์ดแวร์จริงต้องเลือกเอง (ไม่ใส่ flag = sim) | [[DDS and Domains]] |
+| **`CYCLONEDDS_URI`** | ตัวแปรบอก CycloneDDS ว่าใช้การ์ดไหน ตั้งทั่วไปแล้ว SDK หาหุ่นไม่เจอ | [[DDS and Domains]] |
+| **runbook** | โน้ตคำสั่งพร้อมคัดลอก + เหตุผล ใช้ตอนลงมือจริง | [[terminal cmd]] |
+| **inotify** | กลไก Linux ให้โปรแกรมรู้ว่าไฟล์เปลี่ยน (Obsidian/IDE ใช้) มีเพดานจำนวน | [[Troubleshooting]] |

@@ -1,7 +1,7 @@
 ---
 tags: [moc]
 aliases: [หน้าแรก, Home]
-updated: 2026-11-04
+updated: 2026-11-05
 ---
 # G1 23-DoF: แผนที่ความรู้
 
@@ -66,8 +66,18 @@ updated: 2026-11-04
 | [[Environments Map]] | env ไหนใช้กับงานไหน |
 | [[Troubleshooting]] | อาการแปลกๆ ที่เคยเจอและวิธีแก้ |
 
+## 06 my_note (คำสั่งพร้อมคัดลอก)
+| โน้ต | ใช้เมื่อ |
+|---|---|
+| [[terminal cmd]] | วันเทสหุ่นจริง: คำสั่งทุกขั้น + คำอธิบาย |
+| [[g1_23_dof mujoco_sim cmd]] | รัน sim / sim2sim / ซ้อมวันเทสใน sim |
+| [[g1_23_dof isaaclab_sim cmd]] | cross-sim และเทรนใน Isaac Lab |
+| [[Hi-level cmd]] | คอม 164 ในหุ่น: service, build, กล้อง |
+| [[ros2 cmd]] | ROS 2 บน 164: topic, loco client, แขน |
+
 ## อื่นๆ
 - [[Glossary]]: ศัพท์ทั้งหมด
 - [[g1_sim2sim Vault]]: เอกสารแผนเดิมใน vault `g1_sim2sim` (ลิงก์สองทาง)
 - repo หลัก: `~/nvidia/unitree/unitree_rl_mjlab` (branch `phase3-delay-dr`)
+- vault นี้เป็น git repo (private `github.com/Overdamp/g1_knowledge_101`) · commit/push ผ่านปลั๊กอิน Git: Ctrl + P → `Git: Commit all changes with specific message` → `Git: Push`
 - เอกสารต้นฉบับละเอียดกว่า: `unitree_rl_mjlab/doc/g1_23dof_summary/`, `doc/g1_23dof_real_robot_setup_checklist.md`
