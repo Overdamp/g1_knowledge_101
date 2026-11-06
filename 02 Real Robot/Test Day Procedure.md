@@ -24,11 +24,11 @@ cd ~/nvidia/unitree/unitree_rl_mjlab ; conda activate g1_sdk ; S=deploy/robots/g
 | 0 | เปิดหุ่นตอนแขวน ไม่กดปุ่ม + เน็ตเวิร์ก | `g1net` · `g1env` ([[Network Setup]]) | ping 0% loss |
 | 0a | **ปิด sim** | `pgrep -a unitree_mujoco` | ไม่มีผลลัพธ์ (ถ้ามี ปิดก่อน · `deploy_byobu`/`g1ctrl_real` ไม่ยอมเปิดถ้า sim เปิดอยู่) |
 | 0b | **service บนคอม 164** ที่สั่งหุ่นได้ | `ssh unitree@192.168.123.164` แล้ว `systemctl is-active fibo_legged_robot_g1 g1_arm g1_arm_web` | `inactive` ทั้ง 3 · ถ้า `active` คุยกับรุ่นพี่แล้ว `sudo systemctl stop` ([[Hi-level cmd]]) |
-| 0c | **ดูบรรทัดแรกทุกโปรแกรม** | – | ต้องเป็น `DDS: REAL ROBOT ...` / `(REAL ROBOT, keyboard off...)` · เห็น `SIM` = ลืม `--iface enp43s0` |
-| 1 | สุขภาพหุ่น | `python $S/robot_health.py --iface enp43s0` | PASS ทุกบรรทัด, **23 motors online** |
-| 2 | ค่าศูนย์ข้อต่อ | `python $S/offset_check.py --iface enp43s0 --joints right_elbow,...` | OK ทุกข้อต่อที่หมุน ([[Offset Check]]) |
-| 3 | เข้า debug | `motion_mode.py --iface enp43s0 release` → `check` | `name=''`, ไฟเหลือง |
-| 4 | sysid เบาๆ | `sysid_motion.py --iface enp43s0 --groups armL --joints elbow --kinds step` | `kp x` ≈ 1, L2 + B หยุดได้ ([[Sysid Motion]]) |
+| 0c | **ดูบรรทัดแรกทุกโปรแกรม** | – | ต้องเป็น `DDS: REAL ROBOT ...` / `(REAL ROBOT, keyboard off...)` · เห็น `SIM` = ลืม `--network enp43s0` |
+| 1 | สุขภาพหุ่น | `python $S/robot_health.py --network enp43s0` | PASS ทุกบรรทัด, **23 motors online** |
+| 2 | ค่าศูนย์ข้อต่อ | `python $S/offset_check.py --network enp43s0 --joints right_elbow,...` | OK ทุกข้อต่อที่หมุน ([[Offset Check]]) |
+| 3 | เข้า debug | `motion_mode.py --network enp43s0 release` → `check` | `name=''`, ไฟเหลือง |
+| 4 | sysid เบาๆ | `sysid_motion.py --network enp43s0 --groups armL --joints elbow --kinds step` | `kp x` ≈ 1, L2 + B หยุดได้ ([[Sysid Motion]]) |
 | 5 | FixStand gain ที่เทรน | `fixstand_train_gains.sh` + `IFACE=enp43s0 deploy_byobu.sh 1 bm` | `kp x` 0.8–1.2, `kd x` 0.5–1.5 ([[FixStand Train Gains]]) |
 | 6 | Handover + ปิด | **L1 + R1** ค้าง 1 s → START | ไฟม่วง, `name='ai'` ([[Handover]]) → [[Safe Shutdown]] |
 | (7) | ยืนบนพื้น P3b | checklist 9.2 | เมื่อทุกข้อผ่าน + 2 คน + เชือก |

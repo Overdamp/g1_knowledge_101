@@ -10,7 +10,7 @@ aliases: [sysid_motion, system identification]
 → ให้สคริปต์**สั่งท่าเอง**แล้วบันทึกการตอบสนอง
 
 ## ทำอะไร
-`deploy/robots/g1_23dof/scripts/sysid_motion.py --iface enp43s0` ส่ง `rt/lowcmd` เอง (**แทน g1_ctrl ห้ามรันพร้อมกัน**)
+`deploy/robots/g1_23dof/scripts/sysid_motion.py --network enp43s0` ส่ง `rt/lowcmd` เอง (**แทน g1_ctrl ห้ามรันพร้อมกัน**)
 1. ไล่ไปท่ายืน 3 s แล้วค้าง 2 s
 2. ทีละข้อต่อ:
    - **step**: +A → 0 → −A → 0 (ช่วงละ 1.5 s, ขอบนุ่ม 0.1 s)
@@ -28,11 +28,11 @@ aliases: [sysid_motion, system identification]
 ## คำสั่ง
 ```bash
 IFACE=enp43s0 $S/deploy_byobu.sh 1 sysid          # T1/T2 บันทึก, T3 ไม่เปิด g1_ctrl
-python $S/sysid_motion.py --iface enp43s0 --dry-run
-python $S/sysid_motion.py --iface enp43s0 --groups armL --joints elbow --kinds step --segments ~/sysid_seg_<วันที่>_light.csv
-python $S/sysid_motion.py --iface enp43s0 --segments ~/sysid_seg_<วันที่>_full.csv      # รอบเต็ม
+python $S/sysid_motion.py --network enp43s0 --dry-run
+python $S/sysid_motion.py --network enp43s0 --groups armL --joints elbow --kinds step --segments ~/sysid_seg_<วันที่>_light.csv
+python $S/sysid_motion.py --network enp43s0 --segments ~/sysid_seg_<วันที่>_full.csv      # รอบเต็ม
 ```
-ตัวเลือก: `--gains train|unitree`, `--groups`, `--joints`, `--kinds step,chirp`, `--iface`, `--domain`, `--yes`
+ตัวเลือก: `--gains train|unitree`, `--groups`, `--joints`, `--kinds step,chirp`, `--network`, `--domain`, `--yes`
 **ตั้งชื่อ `--segments` ใหม่ทุกครั้ง** (30/10 ไฟล์ถูกทับ) ใช้เวลาใน segments กับ `pd_check --replay --t0 --t1`
 
 ## ผล

@@ -35,9 +35,9 @@ aliases: [ai mode, debug mode, development mode, motion_mode]
 
 ## คำสั่ง
 ```bash
-python deploy/robots/g1_23dof/scripts/motion_mode.py --iface enp43s0 check        # อ่านอย่างเดียว
-python deploy/robots/g1_23dof/scripts/motion_mode.py --iface enp43s0 release      # → debug (หุ่นต้องแขวน)
-python deploy/robots/g1_23dof/scripts/motion_mode.py --iface enp43s0 select ai    # → ai (ปฏิเสธถ้ายังมี lowcmd)
+python deploy/robots/g1_23dof/scripts/motion_mode.py --network enp43s0 check        # อ่านอย่างเดียว
+python deploy/robots/g1_23dof/scripts/motion_mode.py --network enp43s0 release      # → debug (หุ่นต้องแขวน)
+python deploy/robots/g1_23dof/scripts/motion_mode.py --network enp43s0 select ai    # → ai (ปฏิเสธถ้ายังมี lowcmd)
 ```
 
 ## API อื่นในโหมด ai (ยังไม่ได้ทดสอบ)

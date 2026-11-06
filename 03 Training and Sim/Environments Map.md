@@ -34,6 +34,7 @@ aliases: [env, conda, uv, venv]
 | `g1net` | IP 192.168.123.123 บน `enp43s0` + multicast บน `lo` + ping หุ่น |
 | `g1env` | repo + `conda activate g1_sdk` + `unset CYCLONEDDS_URI` + ตั้ง `$S` `$D` |
 | `g1sim` | unitree_mujoco (lo, domain 1) · `G1_SIM_DOMAIN=0 g1sim` สำหรับ g1pilot |
+| `g1sim_band` | sim ที่มีเชือก (`~/sim_band`, domain 1) · ปุ่ม 9 / 7 / 8 |
 | `g1ctrl_sim` | g1_ctrl กับ sim · ไม่ยอมเปิดซ้ำ |
 | `g1ctrl_real` | g1_ctrl หุ่นจริง · ป้ายแดง · ต้องพิมพ์ `real` · ไม่เปิดถ้า sim เปิดอยู่หรือยังไม่ตั้ง IP |
 | `ros_lo` | ROS 2 บน lo + `ROS_DOMAIN_ID=1` เฉพาะ terminal นั้น |

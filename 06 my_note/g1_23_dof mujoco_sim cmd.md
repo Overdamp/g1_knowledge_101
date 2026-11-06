@@ -67,11 +67,11 @@ updated: 2026-11-05
 | การ์ด | `lo` | `enp43s0` |
 | DDS domain | **1** (`simulate/config.yaml`) | **0** |
 | g1_ctrl | ค่าเริ่มต้น (ไม่ใส่อะไร = `lo`, 1) | `--network enp43s0` (domain 0 ให้เอง) |
-| สคริปต์ python | ค่าเริ่มต้น (ไม่ใส่อะไร = `lo`, 1) | `--iface enp43s0` (domain 0 ให้เอง) |
+| สคริปต์ python | ค่าเริ่มต้น (ไม่ใส่อะไร = `lo`, 1) | `--network enp43s0` (domain 0 ให้เอง) · ชื่อเก่า `--network` ยังใช้ได้ |
 | บรรทัดแรกที่พิมพ์ | `DDS: SIM ...` / `(SIM, keyboard on)` | `DDS: REAL ROBOT ...` |
 | คีย์บอร์ด g1_ctrl | เปิด | ปิด (รีโมทเท่านั้น) |
 
-กั้นกันสองชั้น (การ์ด + domain) ลืม flag ตัวเดียวก็ไม่ข้ามไปอีกฝั่ง · **ค่าเริ่มต้นของทุกโปรแกรม = sim** ลืมใส่ flag = ไป sim ไม่ใช่หุ่น (ตั้งแต่ 5/11) · ผิด domain = g1_ctrl ขึ้น warning แล้วรอเฉยๆ ไม่ส่งอะไร
+**ไม่ต้องใส่ `--domain`** โปรแกรมเลือกให้จากการ์ด (`lo` → 1, `enp43s0` → 0) ใส่ได้แต่ไม่จำเป็น ยกเว้นกรณีพิเศษ เช่น g1pilot sim (domain 0 บน lo) · กั้นกันสองชั้น (การ์ด + domain) ลืม flag ตัวเดียวก็ไม่ข้ามไปอีกฝั่ง · **ค่าเริ่มต้นของทุกโปรแกรม = sim** ลืมใส่ flag = ไป sim ไม่ใช่หุ่น (ตั้งแต่ 5/11) · ผิด domain = g1_ctrl ขึ้น warning แล้วรอเฉยๆ ไม่ส่งอะไร
 
 ### g1pilot sim (ROS 2) ต้องใช้ sim domain 0
 Unitree SDK ใน g1pilot เขียน `ChannelFactoryInitialize(0, ...)` ไว้ตายตัว ถ้าจะรัน g1pilot กับ sim ตัวนี้:
@@ -145,7 +145,8 @@ tmux attach -t sim2sim
 ทางลัดใน `~/.bashrc`:
 ```bash
 g1sim          # terminal 1: unitree_mujoco (ป้ายเขียว [SIM]) · ไม่ยอมเปิดซ้ำ, เช็ค multicast ให้
-g1ctrl_sim     # terminal 2: g1_ctrl --network lo --domain 1 · ไม่ยอมเปิดซ้ำ
+g1ctrl_sim     # terminal 2: g1_ctrl กับ sim (lo, domain 1) · ไม่ยอมเปิดซ้ำ
+g1sim_band     # แทน g1sim: sim ที่มีเชือก (ข้อ 4)
 G1_CTRL_DIR=/tmp/g1_fixstand_train/build g1ctrl_sim   # ใช้ g1_ctrl สำเนาอื่น
 ```
 หรือพิมพ์เต็ม:
@@ -155,11 +156,11 @@ cd ~/nvidia/unitree/unitree_rl_mjlab/simulate/build
 env -u CYCLONEDDS_URI LD_LIBRARY_PATH=/opt/unitree_robotics/lib ./unitree_mujoco
 # terminal 2: g1_ctrl ตัวจริง (ใช้ config/config.yaml ของ repo)
 cd ~/nvidia/unitree/unitree_rl_mjlab/deploy/robots/g1_23dof/build
-env -u CYCLONEDDS_URI LD_LIBRARY_PATH=/opt/unitree_robotics/lib ./g1_ctrl --network lo --domain 1
+env -u CYCLONEDDS_URI LD_LIBRARY_PATH=/opt/unitree_robotics/lib ./g1_ctrl      # ไม่ใส่ flag = lo + domain 1
 # terminal 3 (ไม่บังคับ): ดูข้อมูล / บันทึก log เหมือนวันเทสจริง
 conda activate g1_sdk && unset CYCLONEDDS_URI
-python $S/lowstate_monitor.py --iface lo --domain 1
-python $S/lowcmd_monitor.py --iface lo --domain 1
+python $S/lowstate_monitor.py          # ไม่ใส่ flag = sim
+python $S/lowcmd_monitor.py
 python $S/sim_speed_monitor.py          # ค่าเริ่มต้น lo + domain 1 อยู่แล้ว
 # ซ้อมวันเทสใน sim: byobu 4 ช่องแบบเดียวกับวันจริง (IFACE=lo → domain 1 ให้เอง)
 IFACE=lo $S/deploy_byobu.sh 1 simtest
@@ -177,28 +178,38 @@ cd ~/nvidia/unitree/unitree_rl_mjlab/deploy/robots/g1_23dof/build && cmake .. &&
 cd ~/nvidia/unitree/unitree_rl_mjlab/simulate/build && cmake .. && make -j8
 ```
 
-## 4. sim แบบหุ่นแขวน (elastic band) สำหรับทดสอบสคริปต์ที่ส่งแรง
-ใช้ทดสอบ sysid_motion, FixStand gain เทรน, Handover, L2 + B ก่อนขึ้นหุ่นจริง
+## 4. sim แบบหุ่นแขวน (elastic band = เชือก) สำหรับทดสอบสคริปต์ที่ส่งแรง
+ใช้ทดสอบ sysid_motion, FixStand, Handover, L2 + B ก่อนขึ้นหุ่นจริง · สำเนาอยู่ที่ `~/sim_band/` (สร้าง 5/11: `build/unitree_mujoco` + `config.yaml` ที่ `enable_elastic_band: 1`, `robot_scene` เป็น path เต็ม, domain 1) อยู่ใน home ไม่หายตอนรีบูต
 ```bash
-# ทำสำเนา simulate/ แล้วแก้ config.yaml ของสำเนา: enable_elastic_band: 1 + robot_scene เป็น path เต็ม
-cp -r ~/nvidia/unitree/unitree_rl_mjlab/simulate ~/sim_band
-#   robot_scene: "/home/luke/nvidia/unitree/unitree_rl_mjlab/src/assets/robots/unitree_g1/xmls/scene_g1_23dof.xml"
-#   enable_elastic_band: 1
-cd ~/sim_band/build && env -u CYCLONEDDS_URI LD_LIBRARY_PATH=/opt/unitree_robotics/lib ./unitree_mujoco
-# แล้วรันสคริปต์บน lo เช่น
-python $S/sysid_motion.py --iface lo --domain 1 --groups armL --kinds chirp --dry-run
+g1sim_band
+# หรือเต็ม: cd ~/sim_band/build && env -u CYCLONEDDS_URI LD_LIBRARY_PATH=/opt/unitree_robotics/lib ./unitree_mujoco
+# แล้วรันสคริปต์ได้เลย (ค่าเริ่มต้น = sim) เช่น
+python $S/sysid_motion.py --groups armL --kinds chirp --dry-run
 ```
-ในหน้าต่าง MuJoCo: `9` = เปิด/ปิด band · `7`/`8` = ยกขึ้น/ลง
+ในหน้าต่าง MuJoCo (คลิกที่หน้าต่างก่อน): `9` = เปิด/ปิดเชือก · `7` / ↑ = ดึงขึ้น 10 cm · `8` / ↓ = หย่อน 10 cm · Space = หยุด/เล่น
+ถ้า binary ของ `simulate/` ถูก build ใหม่: `cp ~/nvidia/unitree/unitree_rl_mjlab/simulate/build/unitree_mujoco ~/sim_band/build/`
+
+### ทดลอง: FixStand ยืนบนพื้นเองได้ไหม (5–6/11)
+```bash
+$S/fixstand_train_gains.sh                               # g1_ctrl สำเนา FixStand = gain เทรน (/tmp, สร้างใหม่หลังรีบูต)
+g1sim_band                                               # terminal 1
+G1_CTRL_DIR=/tmp/g1_fixstand_train/build g1ctrl_sim      # terminal 2 รอบ A (gain เทรน) · รอบ B ใช้ g1ctrl_sim เฉยๆ (gain Unitree)
+```
+ขั้นตอน: terminal 2 กด `u` (FixStand) → หน้าต่าง MuJoCo กด `8` ทีละครั้งจนเท้าแตะพื้น → กด `8` ต่อ (เชือกรับน้อยลง) → `9` ปลดเชือก
+
+**ผล: ล้มไปข้างหน้าทั้งสองชุด** (~1.5 s หลังเชือกหมด) เพราะยืนนิ่งเป็นลูกตุ้มกลับหัว ข้อเท้าต้องแข็งอย่างน้อย m·g·h = 32.1 × 9.81 × 0.65 ≈ **206 Nm/rad** แต่ kp ข้อเท้า 2 ข้างรวม = 80 (Unitree) / 57 (เทรน) และจุดศูนย์ถ่วงอยู่หน้าข้อเท้า ~3.3 cm · ต่างกันแค่ gain เทรนยุบตัวมากกว่าระหว่างล้ม (ตอนเชือกยังกันล้ม: ขารับ 100% gain เทรนยุบ ~515 mm, Unitree ~7 mm)
+→ **FixStand ยืนเองบนพื้นไม่ได้ไม่ว่า gain ไหน** เชือกต้องรับไว้จนเข้า Velocity · FixStand ใช้ gain Unitree ต่อไป (ยุบน้อยกว่าตอนเชือกช่วย)
 
 **sim สำหรับเรียน (`~/g1_study`)** ตั้งไว้แล้ว: domain 1 + elastic band
 ```bash
-~/g1_study/start_sim.sh            # สคริปต์ของเรา (python) ต้องใช้ --domain 1 ถ้ามี option
+~/g1_study/start_sim.sh            # domain 1 เหมือนกัน · สคริปต์ของ repo ไม่ต้องใส่ flag · อย่าเปิดพร้อม sim ตัวอื่น
 ```
 
 ## ข้อจำกัดของ sim (ต่างจากหุ่นจริง)
 - armature ใน `scene_g1_23dof.xml` = 0.01 ทุกข้อ (ตอนเทรน 0.0036–0.025)
 - FixStand แขนสั่นใน sim (kd 10 + PD explicit 2 ms) หุ่นจริงไม่เป็น
 - ไม่มี motion_switcher, `vol` = 0, bmsstate ปลอม
+- FixStand ยืนเองบนพื้นไม่ได้ (ไม่มีการทรงตัว) ต้องให้เชือกรับ หรือเริ่มด้วย Pause → key 0 → `u` `v` → Run แบบข้อ 3a
 - รีโมทใน sim มาจาก gamepad เท่านั้น (`use_joystick: 1`) ไม่มีจอยใช้คีย์บอร์ดใน g1_ctrl
 
 ## ดูเพิ่ม

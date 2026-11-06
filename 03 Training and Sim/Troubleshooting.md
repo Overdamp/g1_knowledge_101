@@ -11,7 +11,7 @@ aliases: [ปัญหา, แก้ปัญหา, gotchas]
 | crash `dds_write.c ... iox_pub` | libddsc ของ ROS | `env -u CYCLONEDDS_URI LD_LIBRARY_PATH=/opt/unitree_robotics/lib` |
 | `does not match an available interface` | สาย LAN ไม่เสียบ/หุ่นปิด | `ip -br addr show enp43s0` |
 | ROS ไม่ได้ข้อมูล | ไม่ได้ตั้ง domain/การ์ดของ ROS | `ros_lo` (5/11: `.bashrc` ไม่ export ทั่วไปแล้ว) |
-| เครื่องมือไม่เห็นหุ่น บรรทัดแรก `DDS: SIM` | ลืม `--iface enp43s0` (ค่าเริ่มต้น = sim ตั้งแต่ 5/11) | ใส่ flag ([[DDS and Domains]]) |
+| เครื่องมือไม่เห็นหุ่น บรรทัดแรก `DDS: SIM` | ลืม `--network enp43s0` (ค่าเริ่มต้น = sim ตั้งแต่ 5/11) | ใส่ flag ([[DDS and Domains]]) |
 | `deploy_byobu.sh`: `Set IFACE` / `unitree_mujoco is running` | ต้องระบุ IFACE / ปิด sim ก่อนโหมดหุ่น | `IFACE=enp43s0 ...` · ปิด sim |
 | g1pilot sim ไม่เห็น sim | sim ย้ายไป domain 1 แต่ SDK ใน g1pilot ใช้ 0 | `G1_SIM_DOMAIN=0 g1sim` |
 

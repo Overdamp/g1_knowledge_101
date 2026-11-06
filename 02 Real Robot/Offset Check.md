@@ -16,8 +16,8 @@ policy ทนค่าศูนย์คลาดได้ราว ±0.015 rad 
 ถ้าค่าศูนย์เลื่อน δ → **ทั้ง min และ max เลื่อน δ ไปทางเดียวกัน**
 
 ```bash
-python $S/offset_check.py --iface enp43s0 --joints right_elbow,right_wrist,right_shoulder
-python $S/offset_check.py --iface enp43s0                         # ทั้ง 23
+python $S/offset_check.py --network enp43s0 --joints right_elbow,right_wrist,right_shoulder
+python $S/offset_check.py --network enp43s0                         # ทั้ง 23
 python $S/offset_check.py --csv <log>             # จากไฟล์
 ```
 หมุนแต่ละข้อต่อช้าๆ จนชนสุดทั้งสองทาง (ไม่ต้องกดแรง) แล้ว Ctrl-C
