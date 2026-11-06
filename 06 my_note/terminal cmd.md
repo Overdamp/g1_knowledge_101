@@ -96,6 +96,70 @@ cd deploy/robots/g1_23dof/build && env -u CYCLONEDDS_URI LD_LIBRARY_PATH=/opt/un
 
 F6 = detach (โปรแกรมยังรันต่อ) · `byobu attach -t g1deploy` = กลับ · ดู [[Byobu Guide]]
 
+### 3.1 ตัวอย่างการใช้ `deploy_byobu.sh`
+```
+IFACE=enp43s0  $S/deploy_byobu.sh  <RUN>  <TAG>
+   │                                 │      └─ ชื่องาน (ใช้ตั้งชื่อ log) ไม่ใส่ = run
+   │                                 └─ เลขรอบ 1, 2, 3 ... ไม่ใส่ = 1
+   └─ ต้องใส่เสมอ: enp43s0 = หุ่นจริง, lo = ซ้อมใน sim
+```
+```bash
+g1env                                   # ต้องอยู่ใน repo ก่อน และได้ตัวแปร $S
+
+# 1) chirp วัด kd รอบแรก (sysid ส่งแรงเอง ช่อง T3 ไม่ต้องเปิด g1_ctrl)
+IFACE=enp43s0 $S/deploy_byobu.sh 1 chirp
+#    → ~/g1_state_<วันที่>_chirp1.csv, ~/g1_cmd_<วันที่>_chirp1.csv
+# 2) chirp รอบที่ 2 (เช่น แขนขวา) แยก log คนละไฟล์
+IFACE=enp43s0 $S/deploy_byobu.sh 2 chirp
+# 3) sysid step
+IFACE=enp43s0 $S/deploy_byobu.sh 1 sysid
+# 4) FixStand gain เทรน (g1_ctrl สำเนาใน /tmp) ช่อง T3 จะใช้ตัวนั้น · แขวนเท่านั้น
+$S/fixstand_train_gains.sh
+IFACE=enp43s0 G1_CTRL_DIR=/tmp/g1_fixstand_train/build $S/deploy_byobu.sh 1 bm
+# 5) g1_ctrl ตัวปกติ (FixStand → Velocity, Handover)
+IFACE=enp43s0 $S/deploy_byobu.sh 1 run
+# 6) ซ้อมทั้งชุดใน sim ก่อนวันเทส (เปิด g1sim_band ไว้ก่อน)
+IFACE=lo $S/deploy_byobu.sh 1 simtest
+```
+
+**เปิดแล้วเห็นอะไร**
+```
+┌ T1 lowstate_monitor (read-only) ┬ T2 lowcmd_monitor (read-only) ┐
+│ python ... --network enp43s0    │ python ... --network enp43s0  │
+│   --log ~/g1_state_..._chirp1   │   --log ~/g1_cmd_..._chirp1   │
+├ T3 g1_ctrl (SENDS MOTOR CMDS) ──┼ T4 checks / motion_mode ──────┤
+│ ./g1_ctrl --network enp43s0     │ ลูกศรขึ้น = ดึงคำสั่งที่เตรียมไว้: │
+│                                 │ ping, gain_check, motion_mode │
+│                                 │ check/release, pd_check รอบนี้ │
+└─────────────────────────────────┴───────────────────────────────┘
+```
+
+**ลำดับในหนึ่งรอบ (ตัวอย่าง chirp)**
+1. **T1** Enter → เริ่มบันทึก lowstate · **T2** Enter → เริ่มบันทึก lowcmd
+2. **T3** ไม่ต้องกด (sysid ส่งแรงแทน g1_ctrl ถ้ารันพร้อมกันจะแย่งกัน)
+3. **T4** `python $S/sysid_motion.py --network enp43s0 --groups armL --kinds chirp --dry-run` ก่อน แล้วค่อยรันจริงพร้อม `--segments ...`
+4. จบรอบ: **Ctrl-C ที่ T1 และ T2** (ไฟล์ CSV ถึงจะปิดสมบูรณ์)
+5. **T4** ลูกศรขึ้นหา `pd_check.py ~/g1_state_..._chirp1.csv ~/g1_cmd_..._chirp1.csv` แล้วเพิ่ม `--segments <ไฟล์ seg>`
+
+**เปลี่ยนรอบ / ออก / กลับเข้า**
+```bash
+# F6 = detach: ออกจากหน้าจอ แต่โปรแกรมยังรันต่อ
+byobu attach -t g1deploy                     # กลับเข้าหน้าจอเดิม
+tmux kill-session -t g1deploy                # ปิดทั้ง session (Ctrl-C g1_ctrl/monitor ให้เรียบร้อยก่อน)
+IFACE=enp43s0 $S/deploy_byobu.sh 2 chirp     # แล้วค่อยเปิดรอบใหม่
+```
+ย้ายช่อง: คลิก หรือ Shift + ลูกศร (Alt + ลูกศร = สลับ window ไม่ใช่ช่อง)
+
+**สคริปต์ไม่ยอมเปิดเมื่อ**
+| ข้อความ | ทำไม | แก้ |
+|---|---|---|
+| `Set IFACE: ...` | ไม่ได้ใส่ IFACE | ใส่ `IFACE=enp43s0` หรือ `IFACE=lo` |
+| `unitree_mujoco is running ...` | โหมดหุ่นตอน sim ยังเปิดอยู่ | ปิด sim ก่อน |
+| `g1_ctrl is already running outside this session` | มี g1_ctrl ตัวอื่นรันอยู่ | Ctrl-C ตัวนั้นก่อน |
+| `Session g1deploy already exists, attaching` | session เดิมยังอยู่ (พาเข้า session เดิม ไม่ได้เปิดใหม่) | อยากได้ชื่อ log ใหม่ → `tmux kill-session -t g1deploy` ก่อน |
+
+> [!warning] ถ้า session เดิมยังเปิดอยู่ เลข RUN ใหม่ไม่มีผล (แค่พาเข้า session เดิม) kill session ก่อนทุกครั้งที่อยากได้ชื่อ log ใหม่
+
 ## 4. sysid step (3/11)
 ```bash
 # เปิด byobu ชื่องาน sysid · ช่อง T3 ไม่ต้องเปิด g1_ctrl เพราะ sysid_motion ส่ง lowcmd เอง (สองตัวพร้อมกัน = แย่งกัน)
