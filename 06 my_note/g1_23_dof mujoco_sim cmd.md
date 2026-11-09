@@ -129,7 +129,8 @@ python $S/gain_check.py $P/v0
 ## 3. sim ครบระบบ: `unitree_mujoco` + `g1_ctrl`
 ### 3a. แบบสคริปต์เดียว (แนะนำ)
 ```bash
-# เปิด tmux 3 window: 0 mujoco · 1 g1_ctrl (พิมพ์ปุ่มที่นี่) · 2 ความเร็ว
+# เปิด tmux 3 pane ในหน้าเดียว: ซ้ายบน log ของ mujoco · ซ้ายล่าง ความเร็ว · ขวา g1_ctrl (พิมพ์ปุ่มที่นี่ ถูกเลือกไว้แล้ว, คลิกเมาส์ได้)
+# เลิกใช้: tmux kill-session -t sim2sim
 # ใช้สำเนาของ g1_ctrl + config ใน /tmp/g1_sim2sim_<policy> → ไม่แตะ config จริง
 $S/sim2sim_policy.sh v0
 tmux attach -t sim2sim
